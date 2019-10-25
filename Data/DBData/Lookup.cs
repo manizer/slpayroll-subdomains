@@ -17,4 +17,11 @@ public static class Lookup{
         public const int BELUM_LUNAS = 1;
         public const int LUNAS = 2;
     }
+
+    public static class ReportCategory {
+        public const int AGAMA = 1;
+        public const int JENIS_KELAMIN = 2; 
+        public const int IJAZAH = 3;
+	    public const int TOTAL = 4;
+    }
 }
