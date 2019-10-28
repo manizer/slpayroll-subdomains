@@ -1,12 +1,4 @@
 public static class Lookup{
-    public static class Religion{
-        public const int KATHOLIK = 1;
-        public const int KRISTEN = 2;
-        public const int ISLAM = 3;
-        public const int BUDDHA = 4;
-        public const int HINDU = 5;
-        public const int DLL = 6;
-    }
     public static class DebtInstallmentStatus {
         public const int BELUM_DIBAYAR = 1;
         public const int TELAH_DIBAYAR = 2;
