@@ -3,7 +3,7 @@ public class School {
     public string Name;
 }
 
-public class RecommendedEmployee<T>{
+public class RecommendedEmployee<T> where T: BasicSalary {
     public int ID;
     public string Photo;
     public string NIK;
@@ -62,3 +62,7 @@ public class SchoolBasicSalaryPermanent{
         // 
     }
 }
+
+// controller
+RecommendedEmployee<BasicSalaryPermanent> recommendedEmployee = GetEmployeeFromService();
+BasicSalaryPermanent nextBasicSalary = recommendedEmployee.BasicSalary.GetNextBasicSalary();
