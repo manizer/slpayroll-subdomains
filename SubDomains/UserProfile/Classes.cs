@@ -1,5 +1,7 @@
-class SimpleProfile{
+class UserProfile{
     public string PhotoURL;
     public int SchoolID;
-    public int RoleID;  
+    public int RoleID;
+    public string Email;
+    public string PhoneNumber;
 }
