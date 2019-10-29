@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
-    public interface EmployeeSalarySlip{
+    public interface IEmployeeSalarySlip{
         int GetNetSalary();
     }
 }

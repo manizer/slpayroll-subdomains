@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.CalculatePayrollSubdomain{
-    public interface MonthlyPayroll {
+    public interface IMonthlyPayroll {
         int GetTotalIncome();
         int GetTotalDeduction();
     }

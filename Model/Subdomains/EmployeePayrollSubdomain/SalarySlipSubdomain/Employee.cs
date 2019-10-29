@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
-    public class Employee<T> where T : EmployeeSalarySlip{
+    public class Employee<T> where T : IEmployeeSalarySlip{
         public int ID;
         public int SchoolID;
         public int EmployeeStatusID;
