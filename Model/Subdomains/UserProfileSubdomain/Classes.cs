@@ -5,3 +5,8 @@ class UserProfile{
     public string Email;
     public string PhoneNumber;
 }
+
+public class School : MasterData{
+    public string ID;
+    public int Name;
+}
