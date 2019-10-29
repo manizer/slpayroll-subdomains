@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeeSubdomain{
+    /// <summary>
+    /// Informasi Personal seorang karyawan
+    /// </summary>
     public class EmployeeProfile{
         public int ID;
         public int Name;

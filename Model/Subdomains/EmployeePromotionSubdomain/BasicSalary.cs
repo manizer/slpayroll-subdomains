@@ -1,9 +1,22 @@
 namespace Model.Subdomains.EmployeePromotionSubdomain{
-    public abstract class BasicSalary{
+    /// <summary>
+    /// Parent class untuk BasicSalaryHonorer & BasicSalaryPermanent
+    /// </summary>
+    public class BasicSalary{
+        /// <summary>
+        /// Merupakan penampung untuk semua Gaji Pokok dari suatu sekolah
+        /// </summary>
         protected SchoolBasicSalaryPermanent SchoolBasicSalaryPermanent;
         public BasicSalary(SchoolBasicSalaryPermanent schoolBasicSalaryPermanent){
             SchoolBasicSalaryPermanent = schoolBasicSalaryPermanent;
         }
-        BasicSalaryPermanent GetNextBasicSalary();
+        /// <summary>
+        /// Apabila seorang karyawan direkomendasikan untuk naik gaji pokoknya, fungsi ini dapat
+        /// membantu mendapatkan gaji pokok berikutnya
+        /// </summary>
+        /// <returns>
+        /// BasicSalaryPermanent, gaji pokok berikutnya untuk seorang karyawan
+        /// </returns>
+        public BasicSalaryPermanent GetNextBasicSalary() => SchoolBasicSalaryPermanent.GetNextBasicSalaryPermanent();
     }
 }

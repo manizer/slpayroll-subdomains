@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeeSubdomain{
+    /// <summary>
+    /// Informasi karyawan tetap
+    /// </summary>
     public class PermanentEmployeeInformation{
         public int GradeID;
         public int BasicSalaryPermanentID;

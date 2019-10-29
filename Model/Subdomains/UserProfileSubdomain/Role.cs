@@ -1,9 +1,9 @@
 namespace Model.Subdomains.UserProfileSubdomain{
     /// <summary>
-    /// Digunakan untuk:
-    /// - mengisi school dropdown
+    /// Digunakan untuk 
+    /// - mengisi role dropdown
     /// </summary>
-    public class School{
+    public class Role{
         public string ID;
         public int Name;
     }

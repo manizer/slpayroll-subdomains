@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeeSubdomain{
+    /// <summary>
+    /// Informasi Kerja seorang karyawan
+    /// </summary>
     public class EmployeeWorkInformation{
         public string NIK;
         public string PhoneNum;

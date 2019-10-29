@@ -1,13 +1,18 @@
 namespace Model.Subdomains.EmployeePromotionSubdomain{
     public class SchoolBasicSalaryPermanent{
-        public LinkedList<BasicSalaryPermanentsBySchool> BasicSalaryPermanentsBySchool;
+        public List<BasicSalaryPermanentsBySchool> BasicSalaryPermanentsBySchool;
+        private int SchoolID;
         private BasicSalaryPermanent CurrentBasicSalaryPermanent;
 
-        public SchoolBasicSalaryPermanent(LinkedList<BasicSalaryPermanent> BasicSalaryPermanentsBySchool){
+        public SchoolBasicSalaryPermanent(List<BasicSalaryPermanent> BasicSalaryPermanentsBySchool, int SchoolID, int CurrentEmployeeBasicSalaryPermanentID){
             this.BasicSalaryPermanentsBySchool = BasicSalaryPermanentsBySchool;
+            this.SchoolID = SchoolID;
+
+            // Validate BasicSalaryPermanentsBySchool
+            SetCurrentBasicSalaryPermanent(CurrentEmployeeBasicSalaryPermanentID);
         }
 
-        public void SetCurrentBasicSalaryPermanent(int BasicSalaryPermanentID = 0){
+        private void SetCurrentBasicSalaryPermanent(int BasicSalaryPermanentID = 0){
             if(BasicSalaryPermanentID == 0) CurrentBasicSalaryPermanent = null;
             else CurrentBasicSalaryPermanent = BasicSalaryPermanentsBySchool.Find(x => x.ID == BasicSalaryPermanentID);
         }

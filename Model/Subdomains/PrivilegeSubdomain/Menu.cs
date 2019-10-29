@@ -1,4 +1,8 @@
 namespace Model.Subdomains.PrivilegeSubdomain{
+    /// <summary>
+    /// Digunakan untuk:
+    /// - Menampung data master menu, dimana setiap menu akan memiliki Privilege yang disesuaikan dengan Role
+    /// </summary>
     public class Menu{
         public int ID;
         public string Name; 

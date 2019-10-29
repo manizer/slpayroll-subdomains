@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeePromotionSubdomain{
+    /// <summary>
+    /// Penampung untuk gaji pokok karyawan honorer
+    /// </summary>
     public class BasicSalaryHonorer : BasicSalary{
         public int ID;
         public int SchoolID;
