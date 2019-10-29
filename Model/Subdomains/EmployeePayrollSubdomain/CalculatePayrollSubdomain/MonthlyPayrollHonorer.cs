@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.CalculatePayrollSubdomain{
-    public class MonthlyPayrollHonorer : MonthlyPayroll {
+    public class MonthlyPayrollHonorer : IMonthlyPayroll {
         public List<MonthlyAllowanceEntry> ListAllowance;
         public List<MonthlyAllowanceEntry> ListAdditionalAllowance;
         public List<MonthlyDeductionEntry> ListDeduction;
