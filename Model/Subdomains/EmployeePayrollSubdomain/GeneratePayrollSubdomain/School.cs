@@ -1,6 +1,6 @@
-namespace Model.Subdomains.EmployeePayrollSubdomain.ReportSubdomain{
+namespace Model.Subdomains.EmployeePayrollSubdomain.GeneratePayrollSubdomain{
     /// <summary>
-    /// Menampung data sekolah
+    /// Untuk menampung data sekolah
     /// </summary>
     public class School {
         public int ID;

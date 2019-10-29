@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.DebtSubdomain{
+    /// <summary>
+    /// Detail hutang seorang karyawan, dimana detail hutang memiliki banyak cicilan <see cref="EmployeeDebtInstallment"/>
+    /// </summary>
     public class EmployeeDebt {
         public int ID;
         public int DebtStatusID;

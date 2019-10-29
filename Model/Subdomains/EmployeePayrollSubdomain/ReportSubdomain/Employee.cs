@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.ReportSubdomain{
+    /// <summary>
+    /// Data karyawan yang digunakan untuk perhitungan di table laporan
+    /// </summary>
     public class Employee{
         public int ID;
         public int SchoolID;

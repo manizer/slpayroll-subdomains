@@ -1,4 +1,7 @@
 namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
+    /// <summary>
+    /// Penampung untuk detail perhitungan tunjangan (dari table monthlyAllowance)
+    /// </summary>
     public class MonthlyAllowance {
         public int ID;
         public int AllowanceID;
