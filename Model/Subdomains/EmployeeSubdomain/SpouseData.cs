@@ -8,7 +8,7 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public DateTime Birthdate;
         public int EducationID;
         public string Work;
-        public string MarriageLocation;
+        public string MarriagePlace;
         public DateTime MarriageDate;
     }
 }

@@ -4,6 +4,6 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.ReportSubdomain{
     /// </summary>
     public class Category {
         public int ID;
-        public int Name;
+        public string Name;
     }
 }

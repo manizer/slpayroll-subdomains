@@ -1,5 +1,5 @@
 namespace Model.Subdomains.AllowanceSubdomain{
-    public class School{
+    public class Position{
         public int ID;
         public string Name;
     }

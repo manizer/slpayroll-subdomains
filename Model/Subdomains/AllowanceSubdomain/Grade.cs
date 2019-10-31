@@ -1,7 +1,7 @@
-namespace Model.Subdomains.AllowanceAllowance{
+namespace Model.Subdomains.AllowanceSubdomain{
     public class Grade{
         public int ID;
-        public int PayrollGroup; // sebenarnya romawi sih hehe
+        public int PayrollGroup;
         public char Room;
     }
 }
