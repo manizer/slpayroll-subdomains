@@ -7,7 +7,7 @@ namespace Model.Subdomains.AllowanceSubdomain.Permanent{
         public int PositionID;
         public int UnitID;
         public int SchoolID;
-        public string EmployeeStatusID; // Pasti nilainya EMPLOYEESTATUS_PERMANENT
+        public string EmployeeStatusID;
         public int Value;
     }
 }

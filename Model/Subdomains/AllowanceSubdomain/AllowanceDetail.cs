@@ -3,7 +3,7 @@ namespace Model.Subdomains.AllowanceSubdomain.Permanent{
     /// Penampung untuk Tunjangan Utama
     /// Hasil join dari table msAllowance & msAllowanceDetail
     /// </summary>
-    public class MainAllowance{
+    public class AllowanceDetail{
         public int AllowanceDetailID;
         public int SchoolID;
         public int Name;
