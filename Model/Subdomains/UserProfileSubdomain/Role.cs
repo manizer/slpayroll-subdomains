@@ -4,7 +4,7 @@ namespace Model.Subdomains.UserProfileSubdomain{
     /// - mengisi role dropdown
     /// </summary>
     public class Role{
-        public string ID;
-        public int Name;
+        public int ID;
+        public string Name;
     }
 }

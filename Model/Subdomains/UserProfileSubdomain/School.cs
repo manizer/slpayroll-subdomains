@@ -4,7 +4,7 @@ namespace Model.Subdomains.UserProfileSubdomain{
     /// - mengisi school dropdown
     /// </summary>
     public class School{
-        public string ID;
-        public int Name;
+        public int ID;
+        public string Name;
     }
 }
