@@ -6,11 +6,11 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public int GradeID;
         public int BasicSalaryPermanentID;
         public DateTime PermanentPromotionDate;
-        public string LastSKNumber;
-        public DateTime LastSKDate;
+        public string LastDecreeNumber;
+        public DateTime LastDecreeDate;
         // tunjangan masa kerja
         public int LastPromotionTypeID;
-        public DateTime StartSKElligibleDate;
-        public DateTime EndSKElligibleDate;
+        public DateTime StartDecreeElligibleDate;
+        public DateTime EndDecreeElligibleDate;
     }
 }

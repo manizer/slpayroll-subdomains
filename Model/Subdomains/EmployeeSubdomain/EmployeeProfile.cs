@@ -13,7 +13,7 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public int ReligionID;
         public int MarriageStatusID;
         public string Address;
-        public EmployeeWorkInformation EmployeeWorkInformation;
+        public EmployeeJobInformation EmployeeJobInformation;
         public PermanentEmployeeInformation PermanentEmployeeInformation;
         public EducationHistory EducationHistory;
         public Family Family;
