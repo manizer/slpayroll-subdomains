@@ -9,7 +9,7 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public int ProfessionID;
         public int UnitID;
         public int SchoolID;
-        public EmployeeStatus EmployeeStatus;
+        public int EmployeeStatusID;
         public int PositionID;
         public DateTime JoinDate;
         public int BankAccountNumber;
