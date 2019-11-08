@@ -16,6 +16,6 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public EmployeeWorkInformation EmployeeWorkInformation;
         public PermanentEmployeeInformation PermanentEmployeeInformation;
         public EducationHistory EducationHistory;
-        public FamilyInsurance FamilyInsurance;
+        public Family Family;
     }
 }
