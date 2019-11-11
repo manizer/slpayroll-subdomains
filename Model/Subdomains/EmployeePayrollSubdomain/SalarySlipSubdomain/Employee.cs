@@ -13,8 +13,8 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
         public int EmployeeStatusID;
         public int UnitID;
         public int ProfessionID;
-        public string NIM;
         public string Name;
+        public int GradeID;
         public T EmployeeSalarySlip;
     }
 }
