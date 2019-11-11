@@ -10,7 +10,7 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public DateTime LastDecreeDate;
         // tunjangan masa kerja
         public int LastPromotionTypeID;
-        public DateTime StartDecreeElligibleDate;
-        public DateTime EndDecreeElligibleDate;
+        public DateTime DecreeStartDate;
+        public DateTime DecreeEndDate;
     }
 }
