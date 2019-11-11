@@ -8,7 +8,8 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public DateTime PermanentPromotionDate;
         public string LastDecreeNumber;
         public DateTime LastDecreeDate;
-        // tunjangan masa kerja
+        List<ServiceYearAllowance> ServiceYearAllowances;
+        public int AdditionalServiceYearAllowance;
         public int LastPromotionTypeID;
         public DateTime DecreeStartDate;
         public DateTime DecreeEndDate;

@@ -9,5 +9,7 @@ namespace Model.Subdomains.EmployeePromotionSubdomain{
         public int PromotionStatusID;
         public DateTime DecreeStartDate;
         public DateTime DecreeEndDate;
+        public List<ServiceYearAllowance> ServiceYearAllowances;
+        public int AdditionalServiceYearAllowance;
     }
 }
