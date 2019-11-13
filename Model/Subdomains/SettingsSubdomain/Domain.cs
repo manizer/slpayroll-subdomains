@@ -1,4 +1,4 @@
-namespace Model.Subdomains.AppSettingsSubdomain{
+namespace Model.Subdomains.SettingsSubdomain{
     public class Domain{
         public string WebDomain;
     }

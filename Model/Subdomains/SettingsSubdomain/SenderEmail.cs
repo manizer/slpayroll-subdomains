@@ -1,5 +1,5 @@
-namespace Model.Subdomains.AppSettingsSubdomain{
-    public class RegularPromotion{
+namespace Model.Subdomains.SettingsSubdomain{
+    public class GradePromotion{
         public int SKEligibleYears;
         /// <summary>
         /// Periode pengangkatan sejak menjadi honorer
