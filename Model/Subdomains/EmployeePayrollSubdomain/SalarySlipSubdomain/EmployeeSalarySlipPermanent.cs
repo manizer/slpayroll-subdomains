@@ -4,6 +4,7 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
     /// </summary>
     public class EmployeeSalarySlipPermanent : IEmployeeSalarySlip{
         public List<MonthlyAllowance> MonthlyPGPSAllowanceList;
+        public List<MonthlyAllowance> MonthlySpecialAllowanceList;
         public List<MonthlyAdditionalAllowance> MonthlyAdditionalAllowanceList;
         public List<MonthlyDeduction> MonthlyDeductionList;
         public List<MonthlyAdditionalDeduction> MonthlyAdditionalDeductionList;
