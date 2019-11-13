@@ -13,7 +13,9 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.GeneratePayrollSubdomain{
         public int EmployeeStatusID;
         public int UnitID;
         public int ProfessionID;
-        public string NIM;
+        public int GradeID;
+        public string BankAccountNumber;
+        public string NIK;
         public string Name;
         public EmployeePayroll<T> EmployeePayroll;
     }

@@ -10,6 +10,8 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.DebtSubdomain{
         public string NIK;
         public string Name;
         public string Photo;    
+        public int GradeID;
+        public int EmployeeStatusID;
         public EmployeeDebt EmployeeDebt;   
     }
 }
