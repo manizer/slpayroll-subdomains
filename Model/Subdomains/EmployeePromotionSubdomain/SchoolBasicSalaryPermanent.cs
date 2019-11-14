@@ -1,6 +1,6 @@
 namespace Model.Subdomains.EmployeePromotionSubdomain{
     public class SchoolBasicSalaryPermanent{
-        public List<BasicSalaryPermanentsBySchool> BasicSalaryPermanentsBySchool;
+        public List<BasicSalaryPermanent> BasicSalaryPermanentsBySchool;
         private int SchoolID;
         private BasicSalaryPermanent CurrentBasicSalaryPermanent;
 

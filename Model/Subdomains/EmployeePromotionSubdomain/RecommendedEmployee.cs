@@ -14,6 +14,7 @@ namespace Model.Subdomains.EmployeePromotionSubdomain{
         public int ProfessionID;
         public int UnitID;
         T BasicSalary;
+        public int ServiceYearAllowanceAccumulation;
         DecisionInformation DecisionInformation;
     }
 }
