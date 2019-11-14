@@ -6,6 +6,8 @@ namespace Model.Subdomains.EmployeeSubdomain{
         public int ID;
         public string Code;
         public string Name;
+        public string PhotoURL;
+        public int SchoolID;
         public string PhoneNumber;
         public int ProfessionID;
         public int EmployeeStatusID;
