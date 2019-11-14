@@ -1,12 +1,14 @@
 namespace Model.Subdomains.EmployeePromotionSubdomain{
     public class SchoolBasicSalaryPermanent{
-        public List<BasicSalaryPermanent> BasicSalaryPermanentsBySchool;
+        public List<BasicSalaryPermanent> AllBasicSalaryPermanentsBySchool;
         private int SchoolID;
+        private int GradeID;
         private BasicSalaryPermanent CurrentBasicSalaryPermanent;
 
-        public SchoolBasicSalaryPermanent(List<BasicSalaryPermanent> BasicSalaryPermanentsBySchool, int SchoolID, int CurrentEmployeeBasicSalaryPermanentID){
-            this.BasicSalaryPermanentsBySchool = BasicSalaryPermanentsBySchool;
+        public SchoolBasicSalaryPermanent(List<BasicSalaryPermanent> AllBasicSalaryPermanentsBySchool, int SchoolID, int GradeID, int CurrentEmployeeBasicSalaryPermanentID){
+            this.AllBasicSalaryPermanentsBySchool = AllBasicSalaryPermanentsBySchool;
             this.SchoolID = SchoolID;
+            this.GradeID = GradeID;
 
             // Validate BasicSalaryPermanentsBySchool
             SetCurrentBasicSalaryPermanent(CurrentEmployeeBasicSalaryPermanentID);
@@ -14,11 +16,15 @@ namespace Model.Subdomains.EmployeePromotionSubdomain{
 
         private void SetCurrentBasicSalaryPermanent(int BasicSalaryPermanentID = 0){
             if(BasicSalaryPermanentID == 0) CurrentBasicSalaryPermanent = null;
-            else CurrentBasicSalaryPermanent = BasicSalaryPermanentsBySchool.Find(x => x.ID == BasicSalaryPermanentID);
+            else CurrentBasicSalaryPermanent = AllBasicSalaryPermanentsBySchool.Find(x => x.ID == BasicSalaryPermanentID);
         }
 
         public BasicSalaryPermanent GetNextBasicSalaryPermanent(){
             // 
+        }
+
+        public List<SchoolBasicSalaryPermanent> GetAllNextBasicSalaryPermanents(){
+
         }
     }
 

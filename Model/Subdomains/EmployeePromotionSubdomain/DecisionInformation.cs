@@ -4,11 +4,12 @@ namespace Model.Subdomains.EmployeePromotionSubdomain{
     /// </summary>
     public class DecisionInformation{
         public string DecreeNumber;
-        public DateTime SKDate;
         public string Note;
         public int PromotionStatusID;
+        public DateTime DecreeIssueDate;
         public DateTime DecreeStartDate;
         public DateTime DecreeEndDate;
+        public int NewGradeID;
         public List<ServiceYearAllowance> ServiceYearAllowances;
         public int AdditionalServiceYearAllowance;
     }
