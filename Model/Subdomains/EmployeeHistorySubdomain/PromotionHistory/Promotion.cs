@@ -10,11 +10,10 @@ namespace Model.Subdomains.EmployeeHistorySubdomain.PromotionHistory {
         public int OldGradeID;
         public int NewGradeID;
         public int OldBasicSalary;
+        public int OldBasicSalaryID;
         public int NewBasicSalary;
+        public int NewBasicSalaryID;
         public int ServiceYearAllowanceID;
         public string Note;
-        /**
-         * Kurang Massa Kerja/Gaji Pokok
-         */
     }
 }

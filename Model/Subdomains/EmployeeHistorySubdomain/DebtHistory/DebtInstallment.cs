@@ -6,4 +6,4 @@ namespace Model.Subdomains.EmployeeHistorySubdomain.DebtHistory {
         public int InstallmentAmount;
         public string Note;
     }
-}
+}   

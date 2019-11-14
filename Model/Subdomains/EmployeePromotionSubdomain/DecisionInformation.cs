@@ -9,6 +9,9 @@ namespace Model.Subdomains.EmployeePromotionSubdomain{
         public DateTime DecreeIssueDate;
         public DateTime DecreeStartDate;
         public DateTime DecreeEndDate;
+        public int NewBasicSalaryID;
+        public int OldBasicSalaryID;
+        public int OldGradeID;
         public int NewGradeID;
         public List<ServiceYearAllowance> ServiceYearAllowances;
         public int AdditionalServiceYearAllowance;
