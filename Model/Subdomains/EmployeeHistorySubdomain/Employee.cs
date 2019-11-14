@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeeHistorySubdomain {
-    public class Employee{
+    public class Employee<T> where T: IEmployeeHistoryItem{
         public int ID;
         public string Name;
         public string PhotoURL;

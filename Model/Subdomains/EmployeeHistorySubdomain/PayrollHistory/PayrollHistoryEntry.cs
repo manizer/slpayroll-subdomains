@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeeHistorySubdomain.PayrollHistory {
-    public class PayrollHistoryEntry{
+    public class PayrollHistoryEntry: IEmployeeHistoryItem{
         public int MonthlyPayrollDetailID;
         public int Month;
         public int Year;

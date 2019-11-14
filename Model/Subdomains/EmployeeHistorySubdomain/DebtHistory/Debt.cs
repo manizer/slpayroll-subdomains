@@ -1,5 +1,5 @@
 namespace Model.Subdomains.EmployeeHistorySubdomain.DebtHistory {
-    public class Debt{
+    public class Debt: IEmployeeHistoryItem{
         public int ID;
         public int DebtStatusID;
         public DateTime StartDate;
@@ -7,5 +7,6 @@ namespace Model.Subdomains.EmployeeHistorySubdomain.DebtHistory {
         public int RemainingDebt(){
             return 0;
         }
+        public List<DebtInstallment> DebtInstallments;
     }
 }
