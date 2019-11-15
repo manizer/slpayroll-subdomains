@@ -9,6 +9,7 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.GeneratePayrollSubdomain{
     /// </typeparam>
     public class Employee<T> where T : IMonthlyPayroll{
         public int ID;
+        public string PhotoURL;
         public int SchoolID;
         public int EmployeeStatusID;
         public int UnitID;
