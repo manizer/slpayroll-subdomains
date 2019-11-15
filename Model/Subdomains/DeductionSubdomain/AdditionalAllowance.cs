@@ -1,7 +1,9 @@
 namespace Model.Subdomains.AllowanceSubdomain.Permanent{
-    class Deduction{
+    /// <summary>
+    /// Penampung untuk msAdditionalAllowance
+    /// </summary>
+    class AdditionalAllowance{
         public int ID;
         public string Name;
-        DeductionDetail DeductionDetail;
     }
 }

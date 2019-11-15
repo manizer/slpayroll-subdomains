@@ -3,6 +3,5 @@ namespace Model.Subdomains.AllowanceSubdomain.Permanent{
         public int ID;
         public string Name;
         public int Value;
-        // Formula
     }
 }
