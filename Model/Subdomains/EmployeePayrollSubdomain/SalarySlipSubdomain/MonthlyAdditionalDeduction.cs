@@ -4,7 +4,7 @@ namespace Model.Subdomains.EmployeePayrollSubdomain.SalarySlipSubdomain{
     /// </summary>
     public class MonthlyAdditionalDeduction {
         public int ID;
-        public int Name;
-        public string Value;
+        public string Name;
+        public int Value;
     }
 }
