@@ -1,11 +1,9 @@
 namespace Model.Subdomains.SettingsSubdomain{
-    public class GradePromotion{
-        public int SKEligibleYears;
-        /// <summary>
-        /// Periode pengangkatan sejak menjadi honorer
-        /// </summary>
-        
-        public int PromotionMonth1;
-        public int PromotionMonth2;
+    public class SenderEmail{
+        public string Email;
+        public string Password;
+        public string Server;
+        public int ServerPort;
+        public bool SSL;
     }
 }
