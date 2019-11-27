@@ -1,11 +1,11 @@
 public class GeneratePayrollController
 {
-    private readonly IMonthlyAllowanceDetailService monthlyAllowanceDetailService;
+    private readonly IEmployeePayrollService employeePayrollService;
     public IActionResult GeneratePayroll(GeneratePayrollViewModel generatePayrollViewModel)
     {
         string payrollPeriod = generatePayrollViewModel.PayrollPeriod;
         // Generate Payroll
-        monthlyAllowanceDetailService.GenerateMonthlyPayroll(
+        employeePayrollService.GenerateMonthlyPayroll(
             generatePayrollViewModel.SchoolID,
             generatePayrollViewModel.UnitID,
             new PayrollPeriod
