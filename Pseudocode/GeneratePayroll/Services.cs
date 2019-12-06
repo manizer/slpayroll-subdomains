@@ -6,57 +6,69 @@ public class EmployeePayrollService : IEmployeePayrollService
     private readonly IEmployeeRepository employeeRepository;
     private readonly IAllowanceRepository allowanceRepository;
     private readonly IAllowanceDetailRepository allowanceDetailRepository;
+    private readonly IAdditionalAllowanceRepository additionalAllowanceRepository;
     private readonly IMonthlyPayrollRepository monthlyPayrollRepository;
     private readonly IMonthlyPayrollDetailRepository monthlyPayrollDetailRepository;
     private readonly IMonthlyPayrollAllowanceRepository monthlyPayrollAllowanceRepository;
+    private readonly IMonthlyPayrollAdditionalAllowanceRepository monthlyPayrollAdditionalAllowanceRepository;
     private readonly IBasicSalaryPermanentRepository basicSalaryPermanentRepository;
+    private readonly IBasicSalaryHonorerRepository basicSalaryHonorerRepository;
     private readonly ISpouseRepository spouseRepository;
-    private readonly IChild childRepository;
+    private readonly IChildRepository childRepository;
     private readonly IGradeRepository gradeRepository;
     private readonly IFunctionalAllowanceRepository functionalAllowanceRepository;
+    private readonly IPositionalAllowanceRepository positionalAllowanceRepository;
+    private readonly IKaryaAllowanceRepository karyaAllowanceRepository;
+    private readonly IServiceYearAllowanceRepository serviceYearAllowanceRepository;
+    private readonly IDeductionRepository deductionRepository;
+    private readonly IDeductionDetailRepository deductionDetailRepository;
+    private readonly IAdditionalDeductionRepository additionalDeductionRepository;
+    private readonly IMonthlyPayrollDeductionRepository monthlyPayrollDeductionRepository;
+    private readonly IMonthlyPayrollAdditonalDeductionRepository monthlyPayrollAdditionalDeductionRepository;
     private readonly UnitOfWork unitOfWork;
 
-    public void GenerateMonthlyPayroll(int SchoolID, int UnitID, PayrollPeriod payrollPeriod, GenerateMonthlyPayrollDefaultData generateMonthlyPayrollDefaultData)
+    public void GenerateMonthlyPayroll(int schoolID, int unitID, PayrollPeriod payrollPeriod, GenerateMonthlyPayrollDefaultData generateMonthlyPayrollDefaultData)
     {
-        // TODO: Generate Payroll for every employee in a given School, with a given unit wrt payrollPeriod & defaultMonthlyPayrollData
         List<EmployeeDTO> permanentEmployeeDTOs = employeeRepository.FindAllBySchoolAndUnitAndEmployeeStatus(
-            SchoolID,
-            UnitID,
-            EmployeeStatus.PERMANEN
-        );
-        List<EmployeeDTO> honorerEmployeesDTOs = employeeRepository.FindAllBySchoolAndUnitAndEmployeeStatus(
-            SchoolID,
-            UnitID,
-            EmployeeStatus.HONORER
-        );
+            schoolID,
+            unitID,
+            EmployeeStatus.TETAP
+        ).ToList();
 
-        // Check if monthly payroll exist, else insert
-        MonthlyPayrollDTO monthlyPayrollDTO = monthlyPayrollRepository.FindBySchoolAndUnitAndMonthAndYear(SchoolID, UnitID, payrollPeriod.Month, payrollPeriod.Year);
+        List<EmployeeDTO> honorerEmployeesDTOs = employeeRepository.FindAllBySchoolAndUnitAndEmployeeStatus(
+            schoolID,
+            unitID,
+            EmployeeStatus.HONORER
+        ).ToList();
+
+        MonthlyPayrollDTO monthlyPayrollDTO = monthlyPayrollRepository
+            .FindBySchoolAndUnitAndMonthAndYear(schoolID, unitID, payrollPeriod.Month, payrollPeriod.Year);
         if (monthlyPayrollDTO == null)
         {
             monthlyPayrollDTO = monthlyPayrollRepository.Insert(new MonthlyPayrollDTO
             {
-                SchoolID = SchoolID,
-                UnitID = UnitID,
+                SchoolID = schoolID,
+                UnitID = unitID,
                 Month = payrollPeriod.Month
             });
         }
 
         unitOfWork.Run((r, ctx) =>
         {
-            // TODO: convert context of repositories
-
             foreach (EmployeeDTO employeeDTO in permanentEmployeeDTOs)
             {
                 MonthlyPayrollDetailDTO monthlyPayrollDetailDTO = SaveMonthlyPayrollDetail(new MonthlyPayrollDetailDTO
                 {
                     MonthlyPayrollID = monthlyPayrollDTO.ID,
                     EmployeeID = employeeDTO.ID,
-                    EmployeeStatusID = EmployeeStatus.PERMANEN,
+                    EmployeeStatusID = EmployeeStatus.TETAP,
                     WorkingDays = generateMonthlyPayrollDefaultData.DefaultPermanentDayIn,
-                    WorkingHours = generateMonthlyPayrollDefaultData.DefaultPermanentOverTime,
+                    WorkingHours = generateMonthlyPayrollDefaultData.DefaultPermanentOverTime
                 });
-                GeneratePermanentEmployeesMonthlyPayroll(monthlyPayrollDetailDTO.ID, employeeDTO);
+                GeneratePermanentEmployeeMonthlyPayrollAllowances(monthlyPayrollDetailDTO, employeeDTO);
+                GenerateMonthlyPayrollAdditionalAllowances(monthlyPayrollDetailDTO.ID, employeeDTO);
+                GeneratePermanentEmployeeMonthlyPayrollDeductions(monthlyPayrollDetailDTO.ID, employeeDTO);
+                GenerateMonthlyPayrollAdditionalDeductions(monthlyPayrollDetailDTO.ID, employeeDTO);
             }
             foreach (EmployeeDTO employeeDTO in honorerEmployeesDTOs)
             {
@@ -66,97 +78,423 @@ public class EmployeePayrollService : IEmployeePayrollService
                     EmployeeID = employeeDTO.ID,
                     EmployeeStatusID = EmployeeStatus.HONORER,
                     WorkingDays = generateMonthlyPayrollDefaultData.DefaultHonorerDayIn,
-                    WorkingHours = generateMonthlyPayrollDefaultData.DefaultHonorerOverTime,
+                    WorkingHours = generateMonthlyPayrollDefaultData.DefaultHonorerOverTime
                 });
-                GenerateHonorerEmployeesMonthlyPayroll(SchoolID, UnitID, payrollPeriod, generateMonthlyPayrollDefaultData);
+                GenerateHonorerEmployeeMonthlyPayrollAllowances(monthlyPayrollDetailDTO, employeeDTO);
+                GenerateMonthlyPayrollAdditionalAllowances(monthlyPayrollDetailDTO.ID, employeeDTO);
+                GenerateHonorerEmployeeMonthlyPayrollDeductions(monthlyPayrollDetailDTO.ID, employeeDTO);
+                GenerateMonthlyPayrollAdditionalDeductions(monthlyPayrollDetailDTO.ID, employeeDTO);
             }
         });
     }
 
-    private void GeneratePermanentEmployeesMonthlyPayroll(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
+    private void GeneratePermanentEmployeeMonthlyPayrollAllowances(MonthlyPayrollDetailDTO monthlyPayrollDetailDTO, EmployeeDTO employeeDTO)
     {
-        List<AllowanceDTO> permanentAllowanceDTOs = allowanceRepository.FindAllByAllowanceType(AllowanceType.TETAP_PGPS).ToList()
-            .AddRange(allowanceRepository.FindAllByAllowanceType(AllowanceType.TETAP_KHUSUS).ToList());
-        foreach (AllowanceDTO allowanceDTO in permanentAllowanceDTOs)
+        List<AllowanceDTO> permanentAllowanceDTOs = allowanceRepository.FindAllByAllowanceType(AllowanceType.TETAP_PGPS)
+            .Concat(allowanceRepository.FindAllByAllowanceType(AllowanceType.TETAP_KHUSUS)).ToList();
+        BasicSalaryPermanentDTO basicSalaryPermanentDTO = basicSalaryPermanentRepository.Find(employeeDTO.BasicSalaryPermanentID);
+        CalculateMonthlyPayrollAllowances(monthlyPayrollDetailDTO, employeeDTO, permanentAllowanceDTOs, basicSalaryPermanentDTO.Value);
+    }
+
+    private void GenerateHonorerEmployeeMonthlyPayrollAllowances(MonthlyPayrollDetailDTO monthlyPayrollDetailDTO, EmployeeDTO employeeDTO)
+    {
+        List<AllowanceDTO> honorerAllowanceDTOs = allowanceRepository.FindAllByAllowanceType(AllowanceType.HONORER).ToList();
+        BasicSalaryHonorerDTO basicSalaryHonorerDTO = basicSalaryHonorerRepository.FindBySchoolAndUnit(employeeDTO.SchoolID, employeeDTO.UnitID);
+        CalculateMonthlyPayrollAllowances(monthlyPayrollDetailDTO, employeeDTO, honorerAllowanceDTOs, basicSalaryHonorerDTO.Value);
+    }
+
+    private void CalculateMonthlyPayrollAllowances(MonthlyPayrollDetailDTO monthlyPayrollDetailDTO, EmployeeDTO employeeDTO, List<AllowanceDTO> allowanceDTOs, int basicSalary)
+    {
+        foreach (AllowanceDTO allowanceDTO in allowanceDTOs)
         {
-            MonthlyPayrollDetailDTO monthlyPayrollDetailDTO = monthlyPayrollDetailRepository.FindByMonthlyPayrollDetailAndAllowance(monthlyPayrollDetailID, allowanceDTO.ID);
-            BasicSalaryPermanentDTO basicSalaryPermanentDTO = basicSalaryPermanentRepository.Find(employeeDTO.BasicSalaryPermanentID);
+            AllowanceDetailDTO allowanceDetailDTO = allowanceDetailRepository.FindByAllowanceAndSchool(allowanceDTO.ID, employeeDTO.SchoolID);
             switch (allowanceDTO.ID)
             {
-                case Allowance.TETAP_PGPS_GAJIPOKOK:
-                    SaveMonthlyPayrollAllowance(monthlyPayrollDetailDTO.ID, monthlyPayrollDetailID, allowanceDTO.ID, 0, 0, 0, basicSalaryPermanentDTO.Value);
+                case Allowance.TETAP_PGPS_GAJI_POKOK:
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Amount = basicSalary
+                    });
                     break;
+
                 case Allowance.TETAP_PGPS_ISTRI:
-                    SpouseDTO spouseDTO = spouseRepository.Find(employeeDTO.ID);
-                    int NumberOfSpouse = spouseDTO != null ? 1 : 0;
-                    SaveMonthlyPayrollAllowance(monthlyPayrollDetailDTO.ID, monthlyPayrollDetailID, allowanceDTO.ID, 1, NumberOfSpouse, NumberOfSpouse * basicSalaryPermanentDTO.Value);
+                    SpouseDTO spouseDTO = spouseRepository.FindByEmployee(employeeDTO.ID);
+                    int numOfSpouse = spouseDTO != null ? 1 : 0;
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = numOfSpouse,
+                        Variable3 = basicSalary,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * basicSalary) * numOfSpouse
+                    });
                     break;
+
                 case Allowance.TETAP_PGPS_ANAK:
-                    List<ChildDTO> childrenDTO = childRepository.FindAllByEmployeeID(employeeDTO.ID) ?? new List<ChildDTO>();
-                    int NumberOfChildren = childrenDTO.Count > 3 ? 3 : childrenDTO.Count;
-                    SaveMonthlyPayrollAllowance(monthlyPayrollDetailDTO.ID, monthlyPayrollDetailID, allowanceDTO.ID, 1, NumberOfChildren, NumberOfChildren * basicSalaryPermanentDTO.Value);
+                    List<ChildDTO> childrenDTOs = childRepository.FindAllByEmployeeOrderByDateOfBirthDescending(employeeDTO.ID).ToList() ?? new List<ChildDTO>();
+
+                    if (childrenDTOs.Count > AllowanceRule.BATAS_JUMLAH_ANAK)
+                    {
+                        childrenDTOs.RemoveRange(3, childrenDTOs.Count - AllowanceRule.BATAS_JUMLAH_ANAK);
+                    }
+                    childrenDTOs = childrenDTOs.Where(x => ChildAllowanceRule.ValidateAge(x.DateOfBirth)).ToList();
+
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = childrenDTOs.Count,
+                        Variable3 = basicSalary,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * basicSalary) * childrenDTOs.Count
+                    });
                     break;
+
                 case Allowance.TETAP_PGPS_BERAS:
+                    childrenDTOs = childRepository.FindAllByEmployeeOrderByDateOfBirthDescending(employeeDTO.ID).ToList() ?? new List<ChildDTO>();
+                    spouseDTO = spouseRepository.FindByEmployee(employeeDTO.ID);
 
+                    numOfSpouse = spouseDTO != null ? 1 : 0;
+
+                    if (childrenDTOs.Count > AllowanceRule.BATAS_JUMLAH_ANAK)
+                    {
+                        childrenDTOs.RemoveRange(3, childrenDTOs.Count - AllowanceRule.BATAS_JUMLAH_ANAK);
+                    }
+                    childrenDTOs = childrenDTOs.Where(x => ChildAllowanceRule.ValidateAge(x.DateOfBirth)).ToList();
+
+                    int numOfChildren = childrenDTOs.Count;
+                    int numOfFamilyMember = numOfSpouse + numOfChildren + 1;
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = numOfFamilyMember,
+                        Variable3 = 1,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * basicSalary) * numOfFamilyMember
+                    });
                     break;
+
+                case Allowance.HONORER_JABATAN:
                 case Allowance.TETAP_PGPS_JABATAN:
-
+                    PositionalAllowanceDTO positionalAllowanceDTO = positionalAllowanceRepository
+                        .FindByPositionAndSchoolAndEmployeeStatusAndUnit
+                        (employeeDTO.PositionID, employeeDTO.SchoolID, employeeDTO.EmployeeStatusID, employeeDTO.UnitID);
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = positionalAllowanceDTO.Value,
+                        Amount = positionalAllowanceDTO.Value
+                    });
                     break;
+
                 case Allowance.TETAP_PGPS_FUNGSIONAL:
                     GradeDTO gradeDTO = gradeRepository.Find(employeeDTO.GradeID);
-                    FunctionalAllowanceDTO functionalAllowanceDTO = functionalAllowanceRepository.FindBySchoolAndPayrollGroup(employeeDTO.SchoolID, gradeDTO.PayrollGroup);
-                    SaveMonthlyPayrollAllowance(monthlyPayrollDetailDTO.ID, monthlyPayrollDetailID, allowanceDTO.ID, 1, 1, functionalAllowanceDTO.Value);
+                    FunctionalAllowanceDTO functionalAllowanceDTO = functionalAllowanceRepository
+                        .FindBySchoolAndPayrollGroup(employeeDTO.SchoolID, gradeDTO.PayrollGroup);
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = functionalAllowanceDTO.Value,
+                        Amount = functionalAllowanceDTO.Value
+                    });
+                    break;
+
+                case Allowance.TETAP_KHUSUS_ISTRI:
+                    spouseDTO = spouseRepository.FindByEmployee(employeeDTO.ID);
+                    numOfSpouse = spouseDTO != null ? 1 : 0;
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = numOfSpouse,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * numOfSpouse)
+                    });
+                    break;
+
+                case Allowance.TETAP_KHUSUS_ANAK:
+                    childrenDTOs = childRepository.FindAllByEmployeeOrderByDateOfBirthDescending(employeeDTO.ID).ToList() ?? new List<ChildDTO>();
+
+                    if (childrenDTOs.Count > AllowanceRule.BATAS_JUMLAH_ANAK)
+                    {
+                        childrenDTOs.RemoveRange(3, childrenDTOs.Count - AllowanceRule.BATAS_JUMLAH_ANAK);
+                    }
+                    childrenDTOs = childrenDTOs.Where(x => ChildAllowanceRule.ValidateAge(x.DateOfBirth)).ToList();
+
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = childrenDTOs.Count,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * childrenDTOs.Count)
+                    });
+                    break;
+
+                case Allowance.HONORER_TRANSPORT_DAN_MAKAN:
+                case Allowance.TETAP_KHUSUS_TRANSPORT_DAN_MAKAN:
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = monthlyPayrollDetailDTO.WorkingDays,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * monthlyPayrollDetailDTO.WorkingDays)
+                    });
+                    break;
+
+                case Allowance.TETAP_KHUSUS_KARYA:
+                    KaryaAllowanceDTO karyaAllowanceDTO = karyaAllowanceRepository.FindBySchoolAndUnit(employeeDTO.SchoolID, employeeDTO.UnitID);
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = karyaAllowanceDTO.Value,
+                        Amount = karyaAllowanceDTO.Value
+                    });
+                    break;
+
+                case Allowance.TETAP_KHUSUS_MASA_KERJA:
+                    ServiceYearAllowanceDTO serviceYearAllowanceDTO = serviceYearAllowanceRepository
+                        .FindBySchoolAndCurrentDate(employeeDTO.SchoolID, DateTime.Now);
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = serviceYearAllowanceDTO.Value + employeeDTO.ServiceYearAllowanceAccumulation,
+                        Amount = serviceYearAllowanceDTO.Value + employeeDTO.ServiceYearAllowanceAccumulation
+                    });
+                    break;
+
+                case Allowance.HONORER_PENGOBATAN:
+                case Allowance.TETAP_KHUSUS_PENGOBATAN:
+                    double uangPengobatan = (employeeDTO.IsBPJSKesehatan) ? 0 : allowanceDetailDTO.Value;
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = uangPengobatan,
+                        Amount = Convert.ToInt32(uangPengobatan)
+                    });
+                    break;
+
+                case Allowance.TETAP_KHUSUS_JAM_KERJA_LEBIH:
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = allowanceDetailDTO.Value,
+                        Variable2 = monthlyPayrollDetailDTO.WorkingHours,
+                        Amount = Convert.ToInt32(allowanceDetailDTO.Value * monthlyPayrollDetailDTO.WorkingHours)
+                    });
+                    break;
+
+                case Allowance.HONORER_GAJI_POKOK:
+                    SaveMonthlyPayrollAllowance(new MonthlyAllowanceDetail
+                    {
+                        MonthlyPayrollDetailID = monthlyPayrollDetailDTO.ID,
+                        AllowanceID = allowanceDTO.ID,
+                        Variable1 = basicSalary,
+                        Variable2 = monthlyPayrollDetailDTO.WorkingHours,
+                        Amount = basicSalary * monthlyPayrollDetailDTO.WorkingHours
+                    });
                     break;
             }
         }
     }
 
-    private void GenerateHonorerEmployeesMonthlyPayroll(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
+    private void GenerateMonthlyPayrollAdditionalAllowances(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
     {
-        List<AllowanceDTO> honorerAllowanceDTOs = allowanceRepository.FindAllByAllowanceType(AllowanceType.HONORER);
-        foreach (EmployeeDTO employeeDTO in honorerEmployeesDTOs)
+        List<AdditionalAllowanceDTO> additionalAllowanceDTOs = additionalAllowanceRepository.FindAllByEmployeeStatusAndSchool(employeeDTO.EmployeeStatusID, employeeDTO.SchoolID).ToList();
+        foreach (AdditionalAllowanceDTO additionalAllowanceDTO in additionalAllowanceDTOs)
         {
-            foreach (AllowanceDTO allowanceDTO in honorerAllowanceDTOs)
+            SaveMonthlyPayrollAdditionalAllowance(new MonthlyAdditionalAllowanceDetail
             {
+                MonthlyPayrollDetailID = monthlyPayrollDetailID,
+                AdditionalAllowanceID = additionalAllowanceDTO.ID,
+                Amount = additionalAllowanceDTO.Value
+            });
+        }
+    }
 
+    private void GeneratePermanentEmployeeMonthlyPayrollDeductions(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
+    {
+        List<DeductionDTO> permanentDeductionDTOs = deductionRepository.FindAllByEmployeeStatus(EmployeeStatus.TETAP).ToList();
+        CalculateMonthlyPayrollDeductions(monthlyPayrollDetailID, employeeDTO, permanentDeductionDTOs);
+    }
+
+    private void GenerateHonorerEmployeeMonthlyPayrollDeductions(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
+    {
+        List<DeductionDTO> honorerDeductionDTOs = deductionRepository.FindAllByEmployeeStatus(EmployeeStatus.HONORER).ToList();
+        CalculateMonthlyPayrollDeductions(monthlyPayrollDetailID, employeeDTO, honorerDeductionDTOs);
+    }
+
+    private void CalculateMonthlyPayrollDeductions(int monthlyPayrollDetailID, EmployeeDTO employeeDTO, List<DeductionDTO> deductionDTOs)
+    {
+        foreach (DeductionDTO deductionDTO in deductionDTOs)
+        {
+            DeductionDetailDTO deductionDetailDTO = deductionDetailRepository
+                .FindBySchoolAndDeduction(employeeDTO.SchoolID, deductionDTO.ID);
+
+            int tempValue = 0;
+            string[] strList = deductionDetailDTO.AllowanceList.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            foreach (string str in strList)
+            {
+                MonthlyPayrollAllowanceDTO allowanceDTO = monthlyPayrollAllowanceRepository.Find(int.Parse(str));
+                tempValue += allowanceDTO.Amount;
             }
+
+            strList = deductionDetailDTO.AdditionalAllowanceList.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            foreach (string str in strList)
+            {
+                MonthlyPayrollAdditionalAllowanceDTO additionalAllowanceDTO = monthlyPayrollAdditionalAllowanceRepository.Find(int.Parse(str));
+                tempValue += additionalAllowanceDTO.Amount;
+            }
+
+            int allowanceAmount = tempValue * deductionDetailDTO.PercentageValue;
+            int amount = (allowanceAmount < deductionDetailDTO.MinimumValue) ? deductionDetailDTO.MinimumValue : allowanceAmount;
+            SaveMonthlyPayrollDeduction(new MonthlyDeductionDetail
+            {
+                MonthlyPayrollDetailID = monthlyPayrollDetailID,
+                DeductionID = deductionDetailDTO.DeductionID,
+                Amount = amount
+            });
+        }
+    }
+
+    private void GenerateMonthlyPayrollAdditionalDeductions(int monthlyPayrollDetailID, EmployeeDTO employeeDTO)
+    {
+        List<AdditionalDeductionDTO> additionalDeductionDTOs = (additionalDeductionRepository
+            .FindAllByEmployeeStatusAndSchool(employeeDTO.EmployeeStatusID, employeeDTO.SchoolID)).ToList();
+        foreach (AdditionalDeductionDTO additionalDeductionDTO in additionalDeductionDTOs)
+        {
+            SaveMonthlyPayrollAdditionalDeduction(new MonthlyAdditionalDeductionDetail
+            {
+                MonthlyPayrollDetailID = monthlyPayrollDetailID,
+                AdditionalDeductionID = additionalDeductionDTO.ID,
+                Amount = additionalDeductionDTO.Value
+            });
         }
     }
 
     private MonthlyPayrollDetailDTO SaveMonthlyPayrollDetail(MonthlyPayrollDetailDTO monthlyPayrollDetailDTO)
     {
-        if (monthlyPayrollDetailDTO.ID)
+        MonthlyPayrollDetailDTO existingMonthlyPayrollDetailDTO = monthlyPayrollDetailRepository
+            .FindByMonthlyPayrollAndEmployee(monthlyPayrollDetailDTO.MonthlyPayrollID, monthlyPayrollDetailDTO.EmployeeID);
+        monthlyPayrollDetailDTO.ID = existingMonthlyPayrollDetailDTO != null ? existingMonthlyPayrollDetailDTO.ID : 0;
+
+        if (existingMonthlyPayrollDetailDTO != null)
         {
-            monthlyPayrollDetailRepository.Update(monthlyPayrollDetailDTO);
+            return monthlyPayrollDetailRepository.Insert(monthlyPayrollDetailDTO);
         }
         else
         {
-            monthlyPayrollDetailRepository.Insert(monthlyPayrollDetailDTO);
+            return monthlyPayrollDetailRepository.Update(monthlyPayrollDetailDTO);
         }
-        return monthlyPayrollDetailDTO;
     }
 
-    private MonthlyPayrollAllowanceDTO SaveMonthlyPayrollAllowance(int MonthlyPayrollDetailID, int MonthlyPayrollDetailID, int AllowanceID, float Variable1, float Variable2, float Variable3, int Amount)
+    private MonthlyPayrollAllowanceDTO SaveMonthlyPayrollAllowance(MonthlyAllowanceDetail allowanceDetail)
     {
-        MonthlyPayrollAllowanceDTO existingMonthlyPayrollAllowanceDTO = monthlyPayrollAllowanceRepository.FindByMonthlyPayrollDetailAndAllowance(MonthlyPayrollDetailID, AllowanceID);
+        MonthlyPayrollAllowanceDTO existingMonthlyPayrollAllowanceDTO =
+            monthlyPayrollAllowanceRepository.FindByMonthlyPayrollDetailAndAllowance
+            (allowanceDetail.MonthlyPayrollDetailID, allowanceDetail.AllowanceID);
+
         MonthlyPayrollAllowanceDTO monthlyPayrollAllowanceDTO = new MonthlyPayrollAllowanceDTO
         {
             ID = existingMonthlyPayrollAllowanceDTO != null ? existingMonthlyPayrollAllowanceDTO.ID : 0,
-            MonthlyPayrollDetailID = MonthlyPayrollDetailID,
-            AllowanceID = AllowanceID,
-            Variable1 = Variable1,
-            Variable2 = Variable2,
-            Variable3 = Variable3,
-            Amount = Amount
+            MonthlyPayrollDetailID = allowanceDetail.MonthlyPayrollDetailID,
+            AllowanceID = allowanceDetail.AllowanceID,
+            Variable1 = allowanceDetail.Variable1,
+            Variable2 = allowanceDetail.Variable2,
+            Variable3 = allowanceDetail.Variable3,
+            Amount = allowanceDetail.Amount
         };
 
-        if (existingMonthlyPayrollAllowanceDTO)
+        if (existingMonthlyPayrollAllowanceDTO != null)
         {
             return monthlyPayrollAllowanceRepository.Update(monthlyPayrollAllowanceDTO);
         }
         else
         {
             return monthlyPayrollAllowanceRepository.Insert(monthlyPayrollAllowanceDTO);
+        }
+    }
+
+    private MonthlyPayrollAdditionalAllowanceDTO SaveMonthlyPayrollAdditionalAllowance(MonthlyAdditionalAllowanceDetail additionalAllowanceDetail)
+    {
+        MonthlyPayrollAdditionalAllowanceDTO existingMonthlyPayrollAdditionalAllowanceDTO =
+            monthlyPayrollAdditionalAllowanceRepository.FindByMonthlyPayrollDetailAndAdditionalAllowance
+            (additionalAllowanceDetail.MonthlyPayrollDetailID, additionalAllowanceDetail.AdditionalAllowanceID);
+
+        MonthlyPayrollAdditionalAllowanceDTO monthlyPayrollAdditionalAllowanceDTO = new MonthlyPayrollAdditionalAllowanceDTO
+        {
+            ID = existingMonthlyPayrollAdditionalAllowanceDTO != null ? existingMonthlyPayrollAdditionalAllowanceDTO.ID : 0,
+            MonthlyPayrollDetailID = additionalAllowanceDetail.MonthlyPayrollDetailID,
+            AdditionalAllowanceID = additionalAllowanceDetail.AdditionalAllowanceID,
+            Amount = additionalAllowanceDetail.Amount
+        };
+
+        if (existingMonthlyPayrollAdditionalAllowanceDTO != null)
+        {
+            return monthlyPayrollAdditionalAllowanceRepository.Update(monthlyPayrollAdditionalAllowanceDTO);
+        }
+        else
+        {
+            return monthlyPayrollAdditionalAllowanceRepository.Insert(monthlyPayrollAdditionalAllowanceDTO);
+        }
+    }
+
+    private MonthlyPayrollDeductionDTO SaveMonthlyPayrollDeduction(MonthlyDeductionDetail deductionDetail)
+    {
+        MonthlyPayrollDeductionDTO existingMonthlyPayrollDeductionDTO =
+            monthlyPayrollDeductionRepository.FindByMonthlyPayrollDetailAndDeduction
+            (deductionDetail.MonthlyPayrollDetailID, deductionDetail.DeductionID);
+
+        MonthlyPayrollDeductionDTO monthlyPayrollDeductionDTO = new MonthlyPayrollDeductionDTO
+        {
+            ID = existingMonthlyPayrollDeductionDTO != null ? existingMonthlyPayrollDeductionDTO.ID : 0,
+            MonthlyPayrollDetailID = deductionDetail.MonthlyPayrollDetailID,
+            DeductionID = deductionDetail.DeductionID,
+            Amount = deductionDetail.Amount
+        };
+
+        if (existingMonthlyPayrollDeductionDTO != null)
+        {
+            return monthlyPayrollDeductionRepository.Update(monthlyPayrollDeductionDTO);
+        }
+        else
+        {
+            return monthlyPayrollDeductionRepository.Insert(monthlyPayrollDeductionDTO);
+        }
+    }
+
+    private MonthlyPayrollAdditionalDeductionDTO SaveMonthlyPayrollAdditionalDeduction(MonthlyAdditionalDeductionDetail additionalDeductionDetail)
+    {
+        MonthlyPayrollAdditionalDeductionDTO existingMonthlyPayrollAdditionalDeductionDTO = 
+            monthlyPayrollAdditionalDeductionRepository.FindByMonthlyPayrollDetailAndAdditionalDeduction
+            (additionalDeductionDetail.MonthlyPayrollDetailID, additionalDeductionDetail.AdditionalDeductionID);
+
+        MonthlyPayrollAdditionalDeductionDTO monthlyPayrollAdditionalDeductionDTO = new MonthlyPayrollAdditionalDeductionDTO
+        {
+            ID = existingMonthlyPayrollAdditionalDeductionDTO != null ? existingMonthlyPayrollAdditionalDeductionDTO.ID : 0,
+            MonthlyPayrollDetailID = additionalDeductionDetail.MonthlyPayrollDetailID,
+            AdditionalDeductionID = additionalDeductionDetail.AdditionalDeductionID,
+            Amount = additionalDeductionDetail.Amount
+        };
+
+        if (existingMonthlyPayrollAdditionalDeductionDTO != null)
+        {
+            return monthlyPayrollAdditionalDeductionRepository.Update(monthlyPayrollAdditionalDeductionDTO);
+        }
+        else
+        {
+            return monthlyPayrollAdditionalDeductionRepository.Insert(monthlyPayrollAdditionalDeductionDTO);
         }
     }
 }
